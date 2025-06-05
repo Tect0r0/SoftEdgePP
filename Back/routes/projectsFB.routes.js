@@ -18,9 +18,9 @@ import {
   getAllTasks,
   getTasks,
   getProjectAndTitle,
-  addProjectHistory, 
+  addProjectHistory,
   updateSprintNumber,
-
+  countTasks,
 } from "../controllers/projectsFB.controllers.js";
 
 const router = Router();
@@ -58,5 +58,7 @@ router.put("/projectsFB/:id/tasks", verifyToken, updateTaskStatus);
 
 router.get("/projectsFB/:id/projectAndTitle", verifyToken, getProjectAndTitle); // Ruta para obtener el proyecto y titulo de usuario
 router.post("/projectsFB/:projectId/history", verifyToken, addProjectHistory); // Ruta para agregar historial de modificaciones
+
+router.get("/projectsFB/:id/countTasks", verifyToken, countTasks); // Contar las tasks de cada usuario
 
 export default router;

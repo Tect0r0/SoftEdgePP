@@ -119,7 +119,9 @@ export const linkUserToProject = async (req, res) => {
     const userResult = await pool
       .request()
       .input("UserID", sql.Int, userId)
-      .query("SELECT username, lastname, email FROM dbo.Users WHERE UserID = @UserID");
+      .query(
+        "SELECT username, lastname, email FROM dbo.Users WHERE UserID = @UserID"
+      );
 
     const user = userResult.recordset[0];
 
@@ -175,7 +177,9 @@ export const unlinkUserFromProject = async (req, res) => {
     const userResult = await pool
       .request()
       .input("UserID", sql.Int, userId)
-      .query("SELECT username, lastname, email FROM dbo.Users WHERE UserID = @UserID");
+      .query(
+        "SELECT username, lastname, email FROM dbo.Users WHERE UserID = @UserID"
+      );
 
     const user = userResult.recordset[0];
 
@@ -220,7 +224,9 @@ export const unlinkUserFromProject = async (req, res) => {
     });
   } catch (err) {
     console.error("Failed to unlink user from project", err);
-    res.status(500).json({ error: "Error al desvincular el usuario del proyecto." });
+    res
+      .status(500)
+      .json({ error: "Error al desvincular el usuario del proyecto." });
   }
 };
 
@@ -574,6 +580,82 @@ export const getAllTasks = async (req, res) => {
   }
 };
 
+// Endpoint para contar las tasks de cada usuario
+export const countTasks = async (req, res) => {
+  try {
+    const { id: projectId } = req.params;
+
+    const projectRef = db.collection("proyectos").doc(projectId);
+    const projectDoc = await projectRef.get();
+
+    if (!projectDoc.exists) {
+      return res.status(404).json({ error: "Project not found" });
+    }
+
+    const projectData = projectDoc.data();
+    const sections = ["EP", "RF", "RNF", "HU"];
+    const userTaskCounts = {};
+    // Iterar por cada seccion
+    sections.forEach((section) => {
+      if (Array.isArray(projectData[section])) {
+        // Iterar por cada elemento en la seccion
+        projectData[section].forEach((element) => {
+          // Checar si tiene tasks
+          if (Array.isArray(element.tasks)) {
+            // Iterar por cada task
+            element.tasks.forEach((task) => {
+              // Obtener el id del usuario
+              const assignedUserId = task.asignados;
+              // Si no es nulo (no hay asignado)
+              if (assignedUserId && assignedUserId !== null) {
+                // Si el id aun no esta en el array, inicializar en 0
+                if (!userTaskCounts[assignedUserId]) {
+                  userTaskCounts[assignedUserId] = 0;
+                }
+                // Incrementar la cuenta
+                userTaskCounts[assignedUserId]++;
+              }
+            });
+          }
+        });
+      }
+    });
+
+    // Obtener datos de SQL
+    const pool = await sqlConnect();
+    const userDetails = [];
+
+    for (const userId of Object.keys(userTaskCounts)) {
+      const userResult = await pool
+        .request()
+        .input("userId", sql.Int, parseInt(userId))
+        .query(
+          "SELECT UserID, username, lastname, email FROM dbo.Users WHERE UserID = @userId"
+        );
+
+      if (userResult.recordset.length > 0) {
+        const user = userResult.recordset[0];
+        userDetails.push({
+          userId: user.UserID,
+          username: user.username,
+          lastname: user.lastname,
+          email: user.email,
+          taskCount: userTaskCounts[userId],
+        });
+      }
+    }
+
+    return res.status(200).json({
+      success: true,
+      userTaskCounts: userTaskCounts,
+      userDetails: userDetails,
+    });
+  } catch (error) {
+    console.error("Error counting tasks:", error);
+    return res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 export const getProjectAndTitle = async (req, res) => {
   try {
     const { id: userId } = req.params;
@@ -676,11 +758,22 @@ export const updateTaskStatus = async (req, res) => {
 // Funcion para agregar una entrada al historial de un proyecto
 export const addProjectHistory = async (req, res) => {
   const { projectId } = req.params;
-  const { action, userId, userName, userLastname, targetUserId, details, timestamp } = req.body;
+  const {
+    action,
+    userId,
+    userName,
+    userLastname,
+    targetUserId,
+    details,
+    timestamp,
+  } = req.body;
 
   try {
     if (!projectId || !action || !userId || !details || !timestamp) {
-      return res.status(400).json({ success: false, message: "Datos incompletos en la solicitud." });
+      return res.status(400).json({
+        success: false,
+        message: "Datos incompletos en la solicitud.",
+      });
     }
 
     const historyEntry = {
@@ -694,12 +787,21 @@ export const addProjectHistory = async (req, res) => {
     };
 
     // Agrega la entrada al historial del proyecto en Firestore
-    await db.collection("projects").doc(projectId).collection("history").add(historyEntry);
+    await db
+      .collection("projects")
+      .doc(projectId)
+      .collection("history")
+      .add(historyEntry);
 
-    res.status(200).json({ success: true, message: "Historial actualizado correctamente." });
+    res
+      .status(200)
+      .json({ success: true, message: "Historial actualizado correctamente." });
   } catch (error) {
     console.error("Error al agregar historial del proyecto:", error);
-    res.status(500).json({ success: false, message: "Error al agregar historial del proyecto." });
+    res.status(500).json({
+      success: false,
+      message: "Error al agregar historial del proyecto.",
+    });
   }
 };
 
@@ -718,9 +820,13 @@ export const updateSprintNumber = async (req, res) => {
     // Actualiza el número de sprint en el proyecto
     await projectRef.update({ sprintNumber });
 
-    res.status(200).json({ message: "Número de sprint actualizado correctamente" });
+    res
+      .status(200)
+      .json({ message: "Número de sprint actualizado correctamente" });
   } catch (error) {
     console.error("Error al actualizar el número de sprint:", error);
-    res.status(500).json({ message: "Error al actualizar el número de sprint" });
+    res
+      .status(500)
+      .json({ message: "Error al actualizar el número de sprint" });
   }
 };
