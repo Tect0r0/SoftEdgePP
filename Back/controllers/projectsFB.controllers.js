@@ -7,7 +7,6 @@ import { v4 as uuidv4 } from "uuid";
 export const getProjects = async (req, res) => {
   try {
     const { userId } = req.query; // Obtener el userId de la query de la solicitud
-    console.log("User ID:", userId); // Log para verificar el userId recibido
 
     // Validar que se haya proporcionado el userId
     if (!userId) {
@@ -659,7 +658,6 @@ export const countTasks = async (req, res) => {
 export const getProjectAndTitle = async (req, res) => {
   try {
     const { id: userId } = req.params;
-    console.log("User ID:", userId); // Log para verificar el userId recibido
 
     if (!userId) {
       return res.status(400).json({ error: "UserId is required" });

@@ -51,8 +51,6 @@ const TeamEditPopup = ({
 
   // Función para manejar el drag and drop entre las listas
   const handleDrop = (source, destination, item) => {
-    console.log(`Moviendo de ${source} a ${destination}:`, item);
-    console.log(item.id, currentUserId);
 
     if (item.id === currentUserId) {
       setError("No puedes eliminarte a ti mismo del equipo.");
@@ -101,23 +99,12 @@ const TeamEditPopup = ({
 
   // Función para guardar los cambios
   const handleSave = () => {
-    // Log localStorage values for debugging
-    console.log("localStorage values:", {
-      userId: localStorage.getItem("userId"),
-      username: localStorage.getItem("username"),
-      lastname: localStorage.getItem("lastname"),
-    });
 
     const currentUser = {
       userId: Number(localStorage.getItem("userId")),
       name: localStorage.getItem("username") || "Usuario",
       lastname: localStorage.getItem("lastname") || "Desconocido",
     };
-
-    // Log currentUser and member changes for debugging
-    console.log("Current User (from TeamEditPopup):", currentUser);
-    console.log("Added Members:", addedMembers);
-    console.log("Removed Members:", removedMembers);
 
     if (!currentUser.userId || !currentUser.name || !currentUser.lastname) {
       console.error("Información del usuario actual incompleta en TeamEditPopup.");

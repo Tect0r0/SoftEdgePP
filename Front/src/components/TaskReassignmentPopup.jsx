@@ -1,28 +1,28 @@
-import React, { useState, useEffect } from 'react';
-import '../css/TaskReassignmentPopup.css';
+import React, { useState, useEffect } from "react";
+import "../css/TaskReassignmentPopup.css";
 
-const TaskReassignmentPopup = ({ 
-  sprintToDelete, 
-  tasksToReassign, 
-  availableSprints, 
-  onConfirm, 
-  onCancel 
+const TaskReassignmentPopup = ({
+  sprintToDelete,
+  tasksToReassign,
+  availableSprints,
+  onConfirm,
+  onCancel,
 }) => {
   const [taskAssignments, setTaskAssignments] = useState({});
 
   useEffect(() => {
     // Initialize task assignments - default to first available sprint
     const initialAssignments = {};
-    tasksToReassign.forEach(task => {
+    tasksToReassign.forEach((task) => {
       initialAssignments[task.id] = availableSprints[0]?.number || 1;
     });
     setTaskAssignments(initialAssignments);
   }, [tasksToReassign, availableSprints]);
 
   const handleAssignmentChange = (taskId, newSprintNumber) => {
-    setTaskAssignments(prev => ({
+    setTaskAssignments((prev) => ({
       ...prev,
-      [taskId]: parseInt(newSprintNumber)
+      [taskId]: parseInt(newSprintNumber),
     }));
   };
 
@@ -55,17 +55,21 @@ const TaskReassignmentPopup = ({
       <div className="popup-content task-reassignment-popup">
         <h3>Reasignar tareas del Sprint {sprintToDelete}</h3>
         <p>
-          El Sprint {sprintToDelete} tiene {tasksToReassign.length} tarea(s) asignada(s). 
-          Selecciona a qué sprints quieres reasignar cada tarea:
+          El Sprint {sprintToDelete} tiene {tasksToReassign.length} tarea(s)
+          asignada(s). Selecciona a qué sprints quieres reasignar cada tarea:
         </p>
-        
+
         <div className="tasks-reassignment-list">
-          {tasksToReassign.map(task => (
+          {tasksToReassign.map((task) => (
             <div key={task.id} className="task-reassignment-item">
               <div className="task-info">
                 <h4>{task.titulo || task.title}</h4>
                 <p>{task.descripcion || task.description}</p>
-                <span className={`priority-badge ${task.prioridad || task.priority}`}>
+                <span
+                  className={`priority-badge ${
+                    task.prioridad || task.priority
+                  }`}
+                >
                   {task.prioridad || task.priority}
                 </span>
               </div>
@@ -73,11 +77,15 @@ const TaskReassignmentPopup = ({
                 <label htmlFor={`sprint-${task.id}`}>Asignar a Sprint:</label>
                 <select
                   id={`sprint-${task.id}`}
-                  value={taskAssignments[task.id] || availableSprints[0]?.number || 1}
-                  onChange={(e) => handleAssignmentChange(task.id, e.target.value)}
+                  value={
+                    taskAssignments[task.id] || availableSprints[0]?.number || 1
+                  }
+                  onChange={(e) =>
+                    handleAssignmentChange(task.id, e.target.value)
+                  }
                   className="sprint-select"
                 >
-                  {availableSprints.map(sprint => (
+                  {availableSprints.map((sprint) => (
                     <option key={sprint.number} value={sprint.number}>
                       Sprint {sprint.number}
                     </option>

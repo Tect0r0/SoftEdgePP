@@ -11,7 +11,6 @@ import "../css/Spinner.css";
 const SprintBacklog = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
   const { projectId } = useParams();
-  console.log("Project ID desde useParams:", projectId);
   const navigate = useNavigate();
   const { userId } = useContext(UserContext);
   const [project, setProject] = useState(null);
@@ -84,13 +83,11 @@ const SprintBacklog = () => {
         });
         if (!response.ok) throw new Error("Failed to fetch project");
         const data = await response.json();
-        console.log("Project data:", data);
         setProject(data);
 
         // Set sprint duration from project data - this ensures we always use DB values
         const projectSprintDuration = data.sprintDuration || 2;
         setSprintDuration(projectSprintDuration);
-        console.log("Sprint duration from DB:", projectSprintDuration);
 
         // Fetch all tasks
         const tasksResponse = await fetch(
@@ -108,7 +105,6 @@ const SprintBacklog = () => {
         if (tasksResponse.ok) {
           const tasksData = await tasksResponse.json();
           allTasks = tasksData.tasks || [];
-          console.log("Tasks from DB:", allTasks);
         }
 
         // Generate sprints using the actual duration and creation date from DB
@@ -118,11 +114,6 @@ const SprintBacklog = () => {
           allTasks,
           projectSprintDuration,
           data.fechaCreacion
-        );
-        console.log(
-          "Generated sprints with duration:",
-          projectSprintDuration,
-          generatedSprints
         );
         setSprints(generatedSprints);
       } catch (error) {
@@ -138,7 +129,6 @@ const SprintBacklog = () => {
   }, [projectId, allTasks]);
 
   const handleSprintClick = (sprint) => {
-    console.log("Sprint seleccionado:", sprint);
     setSelectedSprint(sprint);
   };
 
@@ -293,7 +283,6 @@ const SprintBacklog = () => {
 
       {selectedSprint && (
         <>
-          {console.log("Backlog sprint details")}
           <SprintDetails
             sprint={selectedSprint}
             sprintTasks={selectedSprint?.tasks || []}

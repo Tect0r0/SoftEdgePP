@@ -80,7 +80,9 @@ function Perfil() {
 
   const filteredProjects = projects.filter(
     (project) =>
-      project.nombreProyecto.toLowerCase().includes(searchQuery.toLowerCase()) ||
+      project.nombreProyecto
+        .toLowerCase()
+        .includes(searchQuery.toLowerCase()) ||
       (project.userTitle &&
         project.userTitle.toLowerCase().includes(searchQuery.toLowerCase()))
   );
@@ -145,7 +147,9 @@ function Perfil() {
       }
     } catch (error) {
       console.error("Error updating user data:", error);
-      setErrorMessage("Error al actualizar los datos. Por favor, intenta de nuevo.");
+      setErrorMessage(
+        "Error al actualizar los datos. Por favor, intenta de nuevo."
+      );
     }
   };
 
@@ -167,7 +171,6 @@ function Perfil() {
       setErrorMessage("Las contraseñas no coinciden.");
       return;
     }
-    console.log("Contraseña cambiada:", passwordData);
     setShowPasswordPopup(false);
     setSuccessMessage("¡La contraseña se ha cambiado con éxito!");
   };
@@ -302,7 +305,10 @@ function Perfil() {
 
         <div className="perfil-right">
           <h2>Proyectos</h2>
-          <div className="search-bar-container" style={{ marginBottom: "20px" }}>
+          <div
+            className="search-bar-container"
+            style={{ marginBottom: "20px" }}
+          >
             <input
               type="text"
               placeholder="Buscar proyectos por nombre o título..."
@@ -358,10 +364,7 @@ function Perfil() {
           className="popup-overlay"
           onClick={() => setShowPasswordPopup(false)}
         >
-          <div
-            className="popup-content"
-            onClick={(e) => e.stopPropagation()}
-          >
+          <div className="popup-content" onClick={(e) => e.stopPropagation()}>
             <h2>Cambiar Contraseña</h2>
             <label>
               Contraseña Actual:

@@ -377,7 +377,7 @@ const Dashboard = () => {
         setUserTaskCounts(data.userDetails);
       }
     } catch (error) {
-      console.log("Error counting tasks: ", error);
+      console.error("Error counting tasks: ", error);
       setError("Error al obtener el conteo de tareas.");
     }
   };
@@ -484,7 +484,6 @@ const Dashboard = () => {
 
       const { tasks: dbTasks } = await resp.json();
       setAllTasks(dbTasks);
-      console.log("Tareas obtenidas:", dbTasks);
 
       const nextTaskNumber = dbTasks.length;
       setNextTaskNumber(nextTaskNumber);
@@ -524,7 +523,6 @@ const Dashboard = () => {
         ...editData,
       }));
       setIsEditing(false);
-      console.log("Project updated successfully");
       setSuccessMessage("Proyecto actualizado exitosamente.");
     } catch (error) {
       console.error("Error updating project:", error);
@@ -681,11 +679,6 @@ const Dashboard = () => {
         lastname: localStorage.getItem("lastname"),
       };
 
-      // Log user data for debugging
-      console.log("Current User (from handleSaveTeam):", user);
-      console.log("Added Members:", addedMembers);
-      console.log("Removed Members:", removedMembers);
-
       if (!user.userId || !user.name || !user.lastname) {
         console.error(
           "Información del usuario actual incompleta o no definida."
@@ -725,18 +718,6 @@ const Dashboard = () => {
       await Promise.all([
         ...addedMembers.map((member) => {
           const url = `${BACKEND_URL}/projectsFB/${projectId}/history`;
-          console.log("POST URL for MEMBER_ADDED:", url);
-          console.log("Payload for MEMBER_ADDED:", {
-            action: "MEMBER_ADDED",
-            userId: user.userId,
-            userName: user.name,
-            userLastname: user.lastname,
-            targetUserId: member.id,
-            details: `Se agregó a ${member.name} ${member.lastname || ""} (${
-              member.email
-            }) al equipo del proyecto`,
-            timestamp: new Date().toISOString(),
-          });
 
           return fetch(url, {
             method: "POST",
@@ -761,18 +742,6 @@ const Dashboard = () => {
         }),
         ...removedMembers.map((member) => {
           const url = `${BACKEND_URL}/projectsFB/${projectId}/history`;
-          console.log("POST URL for MEMBER_REMOVED:", url);
-          console.log("Payload for MEMBER_REMOVED:", {
-            action: "MEMBER_REMOVED",
-            userId: user.userId,
-            userName: user.name,
-            userLastname: user.lastname,
-            targetUserId: member.id,
-            details: `Se removió a ${member.name} ${member.lastname || ""} (${
-              member.email
-            }) del equipo del proyecto`,
-            timestamp: new Date().toISOString(),
-          });
 
           return fetch(url, {
             method: "POST",
@@ -1497,7 +1466,6 @@ const Dashboard = () => {
   const performSprintDeletion = async (sprintNumber, taskAssignments) => {
     try {
       setDeletingSprint(true); // Show spinner
-      console.log("Spinner");
       const newSprintNumber = sprintNumber - 1;
 
       if (Object.keys(taskAssignments).length > 0) {
@@ -1882,7 +1850,9 @@ const Dashboard = () => {
       <div className="dashboard-content">
         <div className="main-dashboard-content">
           <div className="dashboard-header-row">
-            <button className="back-button" onClick={() => navigate("/home")}>←</button>
+            <button className="back-button" onClick={() => navigate("/home")}>
+              ←
+            </button>
           </div>
           <div className="dashboard-tabs">
             {(role == "admin" || role == "editor") && (

@@ -58,7 +58,6 @@ const Home = () => {
       );
 
       if (result.status === 401) {
-        console.log("Token inválido. Redirigiendo al login...");
         setError("Token inválido. Por favor, inicia sesión nuevamente."); // Muestra el popup de error
         setTimeout(() => {
           localStorage.removeItem("token"); // Elimina el token inválido
