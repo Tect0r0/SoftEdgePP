@@ -17,7 +17,7 @@ const ProjectMetrics = ({ ...props }) => {
 
   const taskPieData = {
     labels: ["Completadas", "Pendientes"],
-    datasets: [
+    datasets: [ 
       {
         data: [completedTasks, pendingTasks],
         backgroundColor: ["#c1a5d4", "#eddff6"],
