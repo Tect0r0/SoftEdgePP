@@ -12,7 +12,7 @@ import SprintDetails from "../components/SprintDetails";
 import TaskReassignmentPopup from "../components/TaskReassignmentPopup";
 import "../css/Dashboard.css";
 import ProjectMetrics from "../components/ProjectMetrics";
-import '../css/Spinner.css';
+import "../css/Spinner.css";
 
 const Dashboard = () => {
   const BACKEND_URL = import.meta.env.VITE_BACKEND_URL;
@@ -38,7 +38,7 @@ const Dashboard = () => {
     error: null,
     success: false,
   });
-  
+
   const [sprintDuration, setSprintDuration] = useState(2);
   const [deletingSprint, setDeletingSprint] = useState(false);
 
@@ -92,7 +92,6 @@ const Dashboard = () => {
     }
     return sprints;
   };
-
 
   // Sprint backlog states
   const [sprints, setSprints] = useState([
@@ -176,7 +175,8 @@ const Dashboard = () => {
   const [showDeleteConfirmation, setShowDeleteConfirmation] = useState(false);
   const [deleteMode, setDeleteMode] = useState(false);
   const [taskToSelect, setTaskToSelect] = useState(null);
-  const [showProjectDeleteConfirmation, setShowProjectDeleteConfirmation] = useState(false);
+  const [showProjectDeleteConfirmation, setShowProjectDeleteConfirmation] =
+    useState(false);
   const [projectToDelete, setProjectToDelete] = useState(null);
   const [showDeleteSprintConfirmation, setShowDeleteSprintConfirmation] =
     useState(false);
@@ -184,6 +184,8 @@ const Dashboard = () => {
     useState(false);
   const [tasksToReassign, setTasksToReassign] = useState([]);
   const [sprintToDeleteDashboard, setSprintToDeleteDashboard] = useState(null);
+
+  const [userTaskCounts, setUserTaskCounts] = useState([]);
 
   // Estado para manejar el número máximo de tareas
   const [nextTaskNumber, setNextTaskNumber] = useState(0);
@@ -201,9 +203,10 @@ const Dashboard = () => {
       setLoading(true);
       await fetchProject();
       const projectMembers = await fetchTeamMembers();
+      setLoading(false);
+      await countTasks();
       await fetchAvailableUsers(projectMembers);
       await fetchAllTasks();
-      setLoading(false);
     };
 
     fetchData();
@@ -242,7 +245,9 @@ const Dashboard = () => {
   const fetchProject = async () => {
     const token = localStorage.getItem("token");
     if (!token) {
-      setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+      setError(
+        "No se encontró un token de autenticación. Por favor, inicia sesión."
+      );
       return;
     }
 
@@ -349,6 +354,34 @@ const Dashboard = () => {
     setSelectedSprint(null);
   };
 
+  const countTasks = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/projectsFB/${projectId}/countTasks`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to count tasks");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUserTaskCounts(data.userDetails);
+      }
+    } catch (error) {
+      console.log("Error counting tasks: ", error);
+      setError("Error al obtener el conteo de tareas.");
+    }
+  };
+
   // Función para obtener los usuarios disponibles que no son miembros del equipo
   const fetchAvailableUsers = async (projectMembers) => {
     try {
@@ -373,7 +406,9 @@ const Dashboard = () => {
           lastname: user.lastname,
           role: user.role,
           email: user.email,
-          initials: `${user.username[0] || ""}${user.lastname?.[0] || ""}`.toUpperCase(),
+          initials: `${user.username[0] || ""}${
+            user.lastname?.[0] || ""
+          }`.toUpperCase(),
         }));
 
         const filteredUsers = mappedUsers.filter(
@@ -416,7 +451,9 @@ const Dashboard = () => {
           lastname: member.lastname,
           title: member.title,
           email: member.email,
-          initials: `${member.username[0] || ""}${member.lastname?.[0] || ""}`.toUpperCase(),
+          initials: `${member.username[0] || ""}${
+            member.lastname?.[0] || ""
+          }`.toUpperCase(),
         }));
 
         setTeamMembers(mappedTeamMembers);
@@ -451,7 +488,19 @@ const Dashboard = () => {
 
       const nextTaskNumber = dbTasks.length;
       setNextTaskNumber(nextTaskNumber);
-      console.log(nextTaskNumber);
+
+      // Regenerar los sprints para metricas
+      if (project) {
+        const sprintNumber = project.sprintNumber || 3;
+        const duration = project.sprintDuration || 2;
+        const regeneratedSprints = generateSprints(
+          sprintNumber,
+          dbTasks,
+          duration,
+          project.fechaCreacion
+        );
+        setSprints(regeneratedSprints);
+      }
     } catch (error) {
       console.error("Error fetching all tasks:", error);
     }
@@ -479,7 +528,9 @@ const Dashboard = () => {
       setSuccessMessage("Proyecto actualizado exitosamente.");
     } catch (error) {
       console.error("Error updating project:", error);
-      setError("Error al actualizar el proyecto. Por favor, inténtalo de nuevo.");
+      setError(
+        "Error al actualizar el proyecto. Por favor, inténtalo de nuevo."
+      );
     }
   };
 
@@ -518,7 +569,9 @@ const Dashboard = () => {
       const responseData = await response.json();
 
       if (!response.ok) {
-        throw new Error(responseData.message || "Error al guardar en el servidor");
+        throw new Error(
+          responseData.message || "Error al guardar en el servidor"
+        );
       }
 
       setProject(updatedProject);
@@ -634,7 +687,9 @@ const Dashboard = () => {
       console.log("Removed Members:", removedMembers);
 
       if (!user.userId || !user.name || !user.lastname) {
-        console.error("Información del usuario actual incompleta o no definida.");
+        console.error(
+          "Información del usuario actual incompleta o no definida."
+        );
         console.error("Datos faltantes:", {
           userId: user.userId,
           name: user.name,
@@ -645,7 +700,7 @@ const Dashboard = () => {
       }
 
       await Promise.all([
-        ...addedMembers.map(member =>
+        ...addedMembers.map((member) =>
           fetch(`${BACKEND_URL}/projectsFB/linkUserToProject`, {
             method: "POST",
             headers: {
@@ -655,7 +710,7 @@ const Dashboard = () => {
             body: JSON.stringify({ userId: member.id, projectId }),
           })
         ),
-        ...removedMembers.map(member =>
+        ...removedMembers.map((member) =>
           fetch(`${BACKEND_URL}/projectsFB/unlinkUserFromProject`, {
             method: "POST",
             headers: {
@@ -664,11 +719,11 @@ const Dashboard = () => {
             },
             body: JSON.stringify({ userId: member.id, projectId }),
           })
-        )
+        ),
       ]);
 
       await Promise.all([
-        ...addedMembers.map(member => {
+        ...addedMembers.map((member) => {
           const url = `${BACKEND_URL}/projectsFB/${projectId}/history`;
           console.log("POST URL for MEMBER_ADDED:", url);
           console.log("Payload for MEMBER_ADDED:", {
@@ -677,7 +732,9 @@ const Dashboard = () => {
             userName: user.name,
             userLastname: user.lastname,
             targetUserId: member.id,
-            details: `Se agregó a ${member.name} ${member.lastname || ''} (${member.email}) al equipo del proyecto`,
+            details: `Se agregó a ${member.name} ${member.lastname || ""} (${
+              member.email
+            }) al equipo del proyecto`,
             timestamp: new Date().toISOString(),
           });
 
@@ -693,14 +750,16 @@ const Dashboard = () => {
               userName: user.name,
               userLastname: user.lastname,
               targetUserId: member.id,
-              details: `Se agregó a ${member.name} ${member.lastname || ''} (${member.email}) al equipo del proyecto`,
+              details: `Se agregó a ${member.name} ${member.lastname || ""} (${
+                member.email
+              }) al equipo del proyecto`,
               timestamp: new Date().toISOString(),
             }),
-          }).catch(err => {
+          }).catch((err) => {
             console.error("Error in MEMBER_ADDED request:", err);
           });
         }),
-        ...removedMembers.map(member => {
+        ...removedMembers.map((member) => {
           const url = `${BACKEND_URL}/projectsFB/${projectId}/history`;
           console.log("POST URL for MEMBER_REMOVED:", url);
           console.log("Payload for MEMBER_REMOVED:", {
@@ -709,7 +768,9 @@ const Dashboard = () => {
             userName: user.name,
             userLastname: user.lastname,
             targetUserId: member.id,
-            details: `Se removió a ${member.name} ${member.lastname || ''} (${member.email}) del equipo del proyecto`,
+            details: `Se removió a ${member.name} ${member.lastname || ""} (${
+              member.email
+            }) del equipo del proyecto`,
             timestamp: new Date().toISOString(),
           });
 
@@ -725,22 +786,26 @@ const Dashboard = () => {
               userName: user.name,
               userLastname: user.lastname,
               targetUserId: member.id,
-              details: `Se removió a ${member.name} ${member.lastname || ''} (${member.email}) del equipo del proyecto`,
+              details: `Se removió a ${member.name} ${member.lastname || ""} (${
+                member.email
+              }) del equipo del proyecto`,
               timestamp: new Date().toISOString(),
             }),
-          }).catch(err => {
+          }).catch((err) => {
             console.error("Error in MEMBER_REMOVED request:", err);
           });
-        })
+        }),
       ]);
 
-      setTeamMembers(prev => [
-        ...prev.filter(tm => !removedMembers.some(rm => rm.email === tm.email)),
-        ...addedMembers
+      setTeamMembers((prev) => [
+        ...prev.filter(
+          (tm) => !removedMembers.some((rm) => rm.email === tm.email)
+        ),
+        ...addedMembers,
       ]);
-      setAvailableMembers(prev => [
-        ...prev.filter(am => !addedMembers.some(m => m.email === am.email)),
-        ...removedMembers
+      setAvailableMembers((prev) => [
+        ...prev.filter((am) => !addedMembers.some((m) => m.email === am.email)),
+        ...removedMembers,
       ]);
       setShowTeamPopup(false);
       setSuccessMessage("Equipo actualizado correctamente");
@@ -831,12 +896,12 @@ const Dashboard = () => {
     setDeleteMode(false);
     setRequirementEditData({
       title: "",
-      description: ""
+      description: "",
     });
     setSaveStatus({
       loading: false,
       error: null,
-      success: false
+      success: false,
     });
     setIsEditing(false);
   };
@@ -881,7 +946,9 @@ const Dashboard = () => {
       const token = localStorage.getItem("token");
       if (!token) {
         console.error("No token found. Please log in.");
-        setError("No se encontró un token de autenticación. Por favor, inicia sesión.");
+        setError(
+          "No se encontró un token de autenticación. Por favor, inicia sesión."
+        );
         return;
       }
 
@@ -903,7 +970,10 @@ const Dashboard = () => {
 
         if (!response.ok) {
           const errorData = await response.json();
-          console.error("Error al actualizar la tarea en Firestore:", errorData);
+          console.error(
+            "Error al actualizar la tarea en Firestore:",
+            errorData
+          );
           setError(errorData.message || "Error al actualizar la tarea.");
         }
       } catch (error) {
@@ -937,7 +1007,8 @@ const Dashboard = () => {
           titulo: task.title,
           descripcion: task.description,
           prioridad: task.priority,
-          asignados: teamMembers.find((m) => m.email === task.assignee)?.id || null,
+          asignados:
+            teamMembers.find((m) => m.email === task.assignee)?.id || null,
         })),
       };
       await fetch(`${BACKEND_URL}/projectsFB/${projectId}/tasks`, {
@@ -1024,7 +1095,6 @@ const Dashboard = () => {
                 </div>
               </div>
             ))}
-            {/* Add Sprint Card - Only for Admins */}
             {role === "admin" && (
               <div
                 className="sprint-card add-sprint-card"
@@ -1047,7 +1117,6 @@ const Dashboard = () => {
         )}
       </div>
 
-      {/* Sprint Configuration Section - Only for Admins */}
       {role === "admin" && (
         <div className="sprint-configuration-section">
           <h3>Configuración de Sprints</h3>
@@ -1150,7 +1219,6 @@ const Dashboard = () => {
     <ProjectMetrics tasks={allTasks} sprints={sprints} />
   );
 
-  // Add function to refresh sprints when duration changes
   const refreshSprintsAfterDurationChange = async (newDuration) => {
     try {
       const tasksResponse = await fetch(
@@ -1183,10 +1251,8 @@ const Dashboard = () => {
     }
   };
 
-  // Función para actualizar la duración de los sprints
   const handleSprintDurationChange = async (newDuration) => {
     try {
-      // Only send the fields that need to be updated
       const updateData = {
         nombreProyecto: project.nombreProyecto,
         descripcion: project.descripcion,
@@ -1211,28 +1277,23 @@ const Dashboard = () => {
       });
 
       if (!response.ok) {
-        // Try to parse JSON, but handle cases where it might not be JSON
         let errorMessage = `HTTP ${response.status}: ${response.statusText}`;
         try {
           const errorData = await response.json();
           errorMessage = errorData.message || errorMessage;
         } catch (jsonError) {
-          // If response is not JSON, use the response text
           const errorText = await response.text();
           errorMessage = errorText || errorMessage;
         }
         throw new Error(errorMessage);
       }
 
-      // Update local state
       const updatedProject = { ...project, sprintDuration: newDuration };
       setProject(updatedProject);
       setSprintDuration(newDuration);
 
-      // Regenerar sprints con nueva duración
       const sprintNumber = project.sprintNumber || 3;
 
-      // Fetch tasks again to ensure we have current data
       try {
         const tasksResponse = await fetch(
           `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
@@ -1271,7 +1332,6 @@ const Dashboard = () => {
 
       setSuccessMessage("Duración de sprints actualizada exitosamente.");
 
-      // Refresh sprints after successful update
       await refreshSprintsAfterDurationChange(newDuration);
     } catch (error) {
       console.error("Error updating sprint duration:", error);
@@ -1279,12 +1339,10 @@ const Dashboard = () => {
     }
   };
 
-  // Add function to handle adding new sprints
   const handleAddSprint = async () => {
     try {
       const newSprintNumber = (project.sprintNumber || 3) + 1;
 
-      // Update project in database with new sprint count
       const updateData = {
         sprintNumber: newSprintNumber,
       };
@@ -1305,11 +1363,9 @@ const Dashboard = () => {
         throw new Error("Failed to update project with new sprint count");
       }
 
-      // Update local project state
       const updatedProject = { ...project, sprintNumber: newSprintNumber };
       setProject(updatedProject);
 
-      // Regenerate sprints with new count
       try {
         const tasksResponse = await fetch(
           `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
@@ -1385,12 +1441,10 @@ const Dashboard = () => {
     }
   };
 
-  // Update the handleDeleteLastSprint function to handle task reassignment
   const handleDeleteLastSprint = async () => {
     try {
       const currentSprintCount = project.sprintNumber || 3;
 
-      // Prevent deleting if there's only one sprint
       if (currentSprintCount <= 1) {
         setError(
           "No se puede eliminar el sprint. Debe haber al menos un sprint en el proyecto."
@@ -1398,10 +1452,8 @@ const Dashboard = () => {
         return;
       }
 
-      // Close the confirmation popup
       setShowDeleteSprintConfirmation(false);
 
-      // Get tasks assigned to the last sprint
       const tasksResponse = await fetch(
         `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
         {
@@ -1419,26 +1471,21 @@ const Dashboard = () => {
         allTasks = tasksData.tasks || [];
       }
 
-      // Filter tasks that belong to the sprint being deleted
       const tasksInLastSprint = allTasks.filter(
         (task) => parseInt(task.sprint, 10) === currentSprintCount
       );
 
-      // Set data for task reassignment popup
       setTasksToReassign(tasksInLastSprint);
       setSprintToDeleteDashboard(currentSprintCount);
 
-      // Generate available sprints (all except the one being deleted)
       const availableSprints = sprints.filter(
         (sprint) => sprint.number !== currentSprintCount
       );
 
       if (tasksInLastSprint.length > 0 && availableSprints.length > 0) {
-        // Close reassignment popup before showing spinner
         setShowTaskReassignmentPopup(true);
-        setDeletingSprint(true); // Show spinner
       } else {
-        // If no tasks or no available sprints, proceed with deletion
+        setDeletingSprint(true);
         await performSprintDeletion(currentSprintCount, {});
       }
     } catch (error) {
@@ -1447,11 +1494,10 @@ const Dashboard = () => {
     }
   };
 
-  // Function to perform the actual sprint deletion with task reassignments
   const performSprintDeletion = async (sprintNumber, taskAssignments) => {
     try {
       setDeletingSprint(true); // Show spinner
-      console.log("Spinner")
+      console.log("Spinner");
       const newSprintNumber = sprintNumber - 1;
 
       if (Object.keys(taskAssignments).length > 0) {
@@ -1518,12 +1564,10 @@ const Dashboard = () => {
             });
           }
 
-          // Send updated tasks to Sprint Backlog
           setAllTasks(updatedTasks);
         }
       }
 
-      // Update project with reduced sprint count
       const updateData = {
         sprintNumber: newSprintNumber,
       };
@@ -1544,11 +1588,9 @@ const Dashboard = () => {
         throw new Error("Failed to update project with new sprint count");
       }
 
-      // Update local project state
       const updatedProject = { ...project, sprintNumber: newSprintNumber };
       setProject(updatedProject);
 
-      // Regenerate sprints with new count
       try {
         const tasksResponse = await fetch(
           `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
@@ -1594,25 +1636,73 @@ const Dashboard = () => {
     }
   };
 
-  // Handle task reassignment confirmation
   const handleTaskReassignmentConfirm = async (taskAssignments) => {
-    // Close the reassignment popup
     setShowTaskReassignmentPopup(false);
-
-    // Show spinner
     setDeletingSprint(true);
-
     await performSprintDeletion(sprintToDeleteDashboard, taskAssignments);
-
     setTasksToReassign([]);
     setSprintToDeleteDashboard(null);
   };
 
-  // Handle task reassignment cancellation
   const handleTaskReassignmentCancel = () => {
     setShowTaskReassignmentPopup(false);
     setTasksToReassign([]);
     setSprintToDeleteDashboard(null);
+  };
+
+  const refreshSprintsData = async () => {
+    try {
+      const tasksResponse = await fetch(
+        `${BACKEND_URL}/projectsFB/${projectId}/all-tasks`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (tasksResponse.ok) {
+        const tasksData = await tasksResponse.json();
+        const allTasks = tasksData.tasks || [];
+
+        // Regenerate sprints with updated task data
+        const sprintNumber = project.sprintNumber || 3;
+        const generatedSprints = generateSprints(
+          sprintNumber,
+          allTasks,
+          sprintDuration,
+          project.fechaCreacion
+        );
+        setSprints(generatedSprints);
+
+        // Update the selected sprint with fresh data
+        if (selectedSprint) {
+          const updatedSelectedSprint = generatedSprints.find(
+            (sprint) => sprint.number === selectedSprint.number
+          );
+          setSelectedSprint(updatedSelectedSprint);
+        }
+      }
+    } catch (error) {
+      console.error("Error refreshing sprints:", error);
+    }
+  };
+
+  const renderSprintDetails = (selectedSprint) => {
+    return (
+      <SprintDetails
+        sprint={selectedSprint}
+        sprintTasks={allTasks.filter((task) => {
+          return parseInt(task.sprint, 10) === selectedSprint.number;
+        })}
+        setAllTasks={setAllTasks}
+        onClose={handleCloseSprintDetails}
+        projectId={projectId}
+        refreshSprintsData={refreshSprintsData}
+      />
+    );
   };
 
   if (loading) {
@@ -1791,9 +1881,9 @@ const Dashboard = () => {
       </div>
       <div className="dashboard-content">
         <div className="main-dashboard-content">
-          <button className="back-button" onClick={() => navigate("/home")}>
-            ←
-          </button>
+          <div className="dashboard-header-row">
+            <button className="back-button" onClick={() => navigate("/home")}>←</button>
+          </div>
           <div className="dashboard-tabs">
             {(role == "admin" || role == "editor") && (
               <>
@@ -1847,44 +1937,58 @@ const Dashboard = () => {
         <div className="team-members-container">
           <h2 className="team-members-title">Equipo del Proyecto</h2>
           <div className="team-members-content">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="team-member-card">
-                <div className="member-profile">{member.initials}</div>
-                <div className="member-info">
-                  <div className="member-name" style={{ fontSize: "16px" }}>
-                    {member.name}
-                  </div>
-                  <div className="member-role" style={{ fontSize: "16px" }}>
-                    {member.title}
-                  </div>
-                  <div className="member-email" style={{ fontSize: "16px" }}>
-                    {member.email}
-                  </div>
-                </div>
-                {(role === "editor" || role === "admin") && (
-                  <div className="member-actions">
-                    {showMemberMenu === member.email && (
-                      <div className="member-menu">
-                        {role === "admin" && (
-                          <button onClick={() => handleEditMember(member)}>
-                            Editar
-                          </button>
-                        )}
-                        <button onClick={() => handleRemoveMember(member)}>
-                          Eliminar
-                        </button>
+            {teamMembers.map((member, index) => {
+              const userTaskData = userTaskCounts.find(
+                (user) => user.userId === member.id
+              );
+              const taskCount = userTaskData ? userTaskData.taskCount : 0;
+              return (
+                <div key={index} className="team-member-card">
+                  <div className="member-profile">{member.initials}</div>
+                  <div className="member-info">
+                    <div className="member-name" style={{ fontSize: "16px" }}>
+                      {member.name}
+                    </div>
+                    <div className="member-role" style={{ fontSize: "16px" }}>
+                      {member.title}
+                    </div>
+                    <div className="member-email" style={{ fontSize: "16px" }}>
+                      {member.email}
+                    </div>
+                    {activeTab === "project-metrics" && (
+                      <div className="task-count" style={{ fontSize: "16px" }}>
+                        Tareas asignadas: {taskCount}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                  {(role === "editor" ||
+                    role === "admin" ||
+                    activeTab !== "project-metrics") && (
+                    <div className="member-actions">
+                      {showMemberMenu === member.email && (
+                        <div className="member-menu">
+                          {role === "admin" && (
+                            <button onClick={() => handleEditMember(member)}>
+                              Editar
+                            </button>
+                          )}
+                          <button onClick={() => handleRemoveMember(member)}>
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          {(role === "admin" || role === "editor") && (
-            <button className="edit-team-button" onClick={handleEditTeam}>
-              Gestionar Equipo
-            </button>
-          )}
+          {(role === "admin" || role === "editor") &&
+            activeTab !== "project-metrics" && (
+              <button className="edit-team-button" onClick={handleEditTeam}>
+                Gestionar Equipo
+              </button>
+            )}
         </div>
       </div>
 
@@ -1909,18 +2013,7 @@ const Dashboard = () => {
         />
       )}
 
-      {selectedSprint && (
-        <SprintDetails
-          sprint={selectedSprint}
-          sprintTasks={allTasks.filter((task) => {
-            return parseInt(task.sprint, 10) === selectedSprint.number;
-          })}
-          setAllTasks={setAllTasks}
-          onClose={handleCloseSprintDetails}
-          projectId={projectId}
-          fetchAllTasks={fetchAllTasks}
-        />
-      )}
+      {selectedSprint && renderSprintDetails(selectedSprint)}
 
       <ErrorPopup message={error} onClose={closeErrorPopup} />
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
