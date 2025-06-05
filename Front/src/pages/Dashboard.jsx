@@ -185,6 +185,8 @@ const Dashboard = () => {
   const [tasksToReassign, setTasksToReassign] = useState([]);
   const [sprintToDeleteDashboard, setSprintToDeleteDashboard] = useState(null);
 
+  const [userTaskCounts, setUserTaskCounts] = useState([]);
+
   // Estado para manejar el número máximo de tareas
   const [nextTaskNumber, setNextTaskNumber] = useState(0);
   const [draggedTask, setDraggedTask] = useState(null);
@@ -201,9 +203,10 @@ const Dashboard = () => {
       setLoading(true);
       await fetchProject();
       const projectMembers = await fetchTeamMembers();
+      setLoading(false);
+      await countTasks();
       await fetchAvailableUsers(projectMembers);
       await fetchAllTasks();
-      setLoading(false);
     };
 
     fetchData();
@@ -349,6 +352,34 @@ const Dashboard = () => {
 
   const handleCloseSprintDetails = () => {
     setSelectedSprint(null);
+  };
+
+  const countTasks = async () => {
+    try {
+      const response = await fetch(
+        `${BACKEND_URL}/projectsFB/${projectId}/countTasks`,
+        {
+          method: "GET",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        }
+      );
+
+      if (!response.ok) {
+        throw new Error("Failed to count tasks");
+      }
+
+      const data = await response.json();
+
+      if (data.success) {
+        setUserTaskCounts(data.userDetails);
+      }
+    } catch (error) {
+      console.log("Error counting tasks: ", error);
+      setError("Error al obtener el conteo de tareas.");
+    }
   };
 
   // Función para obtener los usuarios disponibles que no son miembros del equipo
@@ -1906,44 +1937,58 @@ const Dashboard = () => {
         <div className="team-members-container">
           <h2 className="team-members-title">Equipo del Proyecto</h2>
           <div className="team-members-content">
-            {teamMembers.map((member, index) => (
-              <div key={index} className="team-member-card">
-                <div className="member-profile">{member.initials}</div>
-                <div className="member-info">
-                  <div className="member-name" style={{ fontSize: "16px" }}>
-                    {member.name}
-                  </div>
-                  <div className="member-role" style={{ fontSize: "16px" }}>
-                    {member.title}
-                  </div>
-                  <div className="member-email" style={{ fontSize: "16px" }}>
-                    {member.email}
-                  </div>
-                </div>
-                {(role === "editor" || role === "admin") && (
-                  <div className="member-actions">
-                    {showMemberMenu === member.email && (
-                      <div className="member-menu">
-                        {role === "admin" && (
-                          <button onClick={() => handleEditMember(member)}>
-                            Editar
-                          </button>
-                        )}
-                        <button onClick={() => handleRemoveMember(member)}>
-                          Eliminar
-                        </button>
+            {teamMembers.map((member, index) => {
+              const userTaskData = userTaskCounts.find(
+                (user) => user.userId === member.id
+              );
+              const taskCount = userTaskData ? userTaskData.taskCount : 0;
+              return (
+                <div key={index} className="team-member-card">
+                  <div className="member-profile">{member.initials}</div>
+                  <div className="member-info">
+                    <div className="member-name" style={{ fontSize: "16px" }}>
+                      {member.name}
+                    </div>
+                    <div className="member-role" style={{ fontSize: "16px" }}>
+                      {member.title}
+                    </div>
+                    <div className="member-email" style={{ fontSize: "16px" }}>
+                      {member.email}
+                    </div>
+                    {activeTab === "project-metrics" && (
+                      <div className="task-count" style={{ fontSize: "16px" }}>
+                        Tareas asignadas: {taskCount}
                       </div>
                     )}
                   </div>
-                )}
-              </div>
-            ))}
+                  {(role === "editor" ||
+                    role === "admin" ||
+                    activeTab !== "project-metrics") && (
+                    <div className="member-actions">
+                      {showMemberMenu === member.email && (
+                        <div className="member-menu">
+                          {role === "admin" && (
+                            <button onClick={() => handleEditMember(member)}>
+                              Editar
+                            </button>
+                          )}
+                          <button onClick={() => handleRemoveMember(member)}>
+                            Eliminar
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
           </div>
-          {(role === "admin" || role === "editor") && (
-            <button className="edit-team-button" onClick={handleEditTeam}>
-              Gestionar Equipo
-            </button>
-          )}
+          {(role === "admin" || role === "editor") &&
+            activeTab !== "project-metrics" && (
+              <button className="edit-team-button" onClick={handleEditTeam}>
+                Gestionar Equipo
+              </button>
+            )}
         </div>
       </div>
 
