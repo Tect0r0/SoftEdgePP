@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from "react";
 import "../css/AvatarIA.css";
-import chatbotImage from "../../public/icons/chatbot.png"; // Import the chatbot image
+import chatbotImage from "../../public/icons/chatbot.png";
 
 const AvatarIA = () => {
   const [sessionId] = useState(() => {
@@ -16,7 +16,10 @@ const AvatarIA = () => {
   const [showChat, setShowChat] = useState(false);
   const [showVoicePopup, setShowVoicePopup] = useState(false);
   const [messages, setMessages] = useState([
-    { text: "¿En qué te puedo ayudar?", sender: "other" },
+    {
+      text: `Hola, soy Stratty, asistente virtual. Si quieres conocer más sobre la página, pregúntame. Si quieres información sobre algún proyecto, pregúntame: "Qué es el proyecto X?" (asegúrate de escribir el nombre exacto). Si tienes dudas sobre cómo crear o editar proyectos, elementos, o miembros de equipo, pregúntamelo directamente. Si quieres saber sobre todos los proyectos disponibles, pídeme que "liste proyectos".`,
+      sender: "other",
+    },
   ]);
   const [currentMessage, setCurrentMessage] = useState("");
   const [isLoading, setIsLoading] = useState(false);
@@ -112,7 +115,7 @@ const AvatarIA = () => {
         const transcript = event.results[0][0].transcript;
         setIsRecording(false);
         setIsProcessingVoice(false);
-        
+
         if (showVoicePopup) {
           handleVoiceMessage(transcript);
         } else {
@@ -227,10 +230,10 @@ const AvatarIA = () => {
   const handleReadMessage = (text) => {
     const utterance = new SpeechSynthesisUtterance(text);
     utterance.lang = "es-MX"; // Set language to Spanish (Mexico)
-    
+
     // Improved voice selection with multiple fallbacks for Spanish
     let selectedVoice = null;
-    
+
     // Priority order for Spanish voices
     const spanishVoiceNames = [
       "Microsoft Sabina", // Primary choice
@@ -243,52 +246,53 @@ const AvatarIA = () => {
       "spanish", // Generic Spanish identifier
       "es-MX", // Language code match
       "es-ES", // Spain Spanish as fallback
-      "es" // Any Spanish voice
+      "es", // Any Spanish voice
     ];
-    
+
     // First, try to find exact matches
     for (const voiceName of spanishVoiceNames) {
-      selectedVoice = voices.find(voice => 
+      selectedVoice = voices.find((voice) =>
         voice.name.toLowerCase().includes(voiceName.toLowerCase())
       );
       if (selectedVoice) break;
     }
-    
+
     // If no exact match, try to find any Spanish voice by language
     if (!selectedVoice) {
-      selectedVoice = voices.find(voice => 
-        voice.lang && (
-          voice.lang.startsWith('es-') || 
-          voice.lang.toLowerCase().includes('spanish') ||
-          voice.lang.toLowerCase().includes('español')
-        )
+      selectedVoice = voices.find(
+        (voice) =>
+          voice.lang &&
+          (voice.lang.startsWith("es-") ||
+            voice.lang.toLowerCase().includes("spanish") ||
+            voice.lang.toLowerCase().includes("español"))
       );
     }
-    
+
     // Final fallback: use any available voice but ensure Spanish language
     if (!selectedVoice && voices.length > 0) {
       selectedVoice = voices[0];
     }
-    
+
     if (selectedVoice) {
       utterance.voice = selectedVoice;
       // Force Spanish language even if voice doesn't match
-      utterance.lang = selectedVoice.lang && selectedVoice.lang.startsWith('es-') 
-        ? selectedVoice.lang 
-        : "es-MX";
+      utterance.lang =
+        selectedVoice.lang && selectedVoice.lang.startsWith("es-")
+          ? selectedVoice.lang
+          : "es-MX";
     }
-    
+
     // Additional settings for consistent pronunciation
     utterance.rate = 0.9; // Slightly slower for clarity
     utterance.pitch = 1.0; // Normal pitch
     utterance.volume = 1.0; // Full volume
 
     // isSpeaking ya está establecido en handleVoiceMessage
-    
+
     utterance.onend = () => {
       setIsSpeaking(false);
     };
-    
+
     utterance.onerror = () => {
       setIsSpeaking(false);
     };
@@ -361,10 +365,16 @@ const AvatarIA = () => {
                 <h2>Asistente de Voz</h2>
                 <div className="voice-content">
                   <div className="voice-visualization">
-                    <div className={`voice-circle ${isRecording ? 'recording' : ''} ${isLoading || isProcessingVoice ? 'processing' : ''}`}>
+                    <div
+                      className={`voice-circle ${
+                        isRecording ? "recording" : ""
+                      } ${isLoading || isProcessingVoice ? "processing" : ""}`}
+                    >
                       <div className="voice-inner-circle">
                         <span className="material-icons voice-icon">
-                          {isLoading || isProcessingVoice ? 'hourglass_empty' : 'mic'}
+                          {isLoading || isProcessingVoice
+                            ? "hourglass_empty"
+                            : "mic"}
                         </span>
                       </div>
                       {isRecording && (
@@ -376,35 +386,50 @@ const AvatarIA = () => {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="voice-status">
                     {isRecording ? (
-                      <p className="status-text recording-text">🎤 Grabando... Toca para detener</p>
+                      <p className="status-text recording-text">
+                        🎤 Grabando... Toca para detener
+                      </p>
                     ) : isProcessingVoice ? (
-                      <p className="status-text processing-text">⏳ Procesando tu mensaje...</p>
+                      <p className="status-text processing-text">
+                        ⏳ Procesando tu mensaje...
+                      </p>
                     ) : isLoading ? (
-                      <p className="status-text processing-text">⏳ Procesando tu mensaje...</p>
+                      <p className="status-text processing-text">
+                        ⏳ Procesando tu mensaje...
+                      </p>
                     ) : isSpeaking ? (
-                      <p className="status-text speaking-text">🔊 Reproduciendo mensaje...</p>
+                      <p className="status-text speaking-text">
+                        🔊 Reproduciendo mensaje...
+                      </p>
                     ) : (
-                      <p className="status-text ready-text">💬 Toca el micrófono para hablar</p>
+                      <p className="status-text ready-text">
+                        💬 Toca el micrófono para hablar
+                      </p>
                     )}
                   </div>
 
                   {/* Solo mostrar el botón si no está procesando ni hablando */}
                   {!isProcessingVoice && !isLoading && !isSpeaking && (
                     <button
-                      className={`voice-record-btn-large ${isRecording ? 'recording' : ''}`}
+                      className={`voice-record-btn-large ${
+                        isRecording ? "recording" : ""
+                      }`}
                       onClick={handleMicButtonClick}
                     >
                       <span className="material-icons">
-                        {isRecording ? 'stop' : 'mic'}
+                        {isRecording ? "stop" : "mic"}
                       </span>
                     </button>
                   )}
                 </div>
-                
-                <button className="ia-popup-back" onClick={() => setShowVoicePopup(false)}>
+
+                <button
+                  className="ia-popup-back"
+                  onClick={() => setShowVoicePopup(false)}
+                >
                   ←
                 </button>
               </div>
@@ -440,10 +465,13 @@ const AvatarIA = () => {
                 </div>
                 <div className="chat-input-container">
                   <button
-                    className={`chat-mic-button ${isRecording ? "recording" : ""}`}
+                    className={`chat-mic-button ${
+                      isRecording ? "recording" : ""
+                    }`}
                     onClick={handleMicButtonClick}
                   >
-                    <span className="material-icons">mic</span> {/* Always show "mic" icon */}
+                    <span className="material-icons">mic</span>{" "}
+                    {/* Always show "mic" icon */}
                   </button>
                   <input
                     type="text"
@@ -460,7 +488,12 @@ const AvatarIA = () => {
                     disabled={isLoading || isRecording} // bloquea envío durante grabación
                   >
                     <span className="material-icons">
-                      {isRecording ? "mic" : isLoading ? "hourglass_empty" : "arrow_upward"} {/* Cambia ícono */}
+                      {isRecording
+                        ? "mic"
+                        : isLoading
+                        ? "hourglass_empty"
+                        : "arrow_upward"}{" "}
+                      {/* Cambia ícono */}
                     </span>
                   </button>
                 </div>

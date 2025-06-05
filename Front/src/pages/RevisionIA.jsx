@@ -89,11 +89,6 @@ function RevisionIA() {
   };
 
   const saveOrderToBackend = (updatedTab) => {
-    console.log("Orden actualizado localmente:", {
-      tabId: activeTab,
-      requirements: updatedTab,
-    });
-
     // Actualizar el estado local
     setProjectData((prev) => ({
       ...prev,
@@ -147,7 +142,6 @@ function RevisionIA() {
 
           const parsedData = JSON.parse(jsonData);
           const transformedData = transformGeneratedData(parsedData);
-          console.log("Datos transformados:", transformedData);
 
           setProjectData(transformedData);
 
@@ -500,11 +494,6 @@ function RevisionIA() {
           nombreProyecto: projectData.nombreProyecto,
           descripcion: projectData.descripcion,
         };
-
-        console.log(
-          "JSON actualizado automáticamente:",
-          JSON.stringify(updatedData, null, 2)
-        );
 
         sessionStorage.setItem("projectData", JSON.stringify(updatedData));
 

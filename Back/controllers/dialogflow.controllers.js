@@ -36,7 +36,6 @@ export const handleWebhook = async (req, res) => {
     const [response] = await sessionClient.detectIntent(request);
     const intent = response.queryResult.intent.displayName;
     let fulfillmentText = response.queryResult.fulfillmentText;
-    console.log("respuesta IA:", response);
 
     // Intent de listar proyectos
     if (intent === "Listar proyectos") {
@@ -51,7 +50,7 @@ export const handleWebhook = async (req, res) => {
     }
 
     if (intent === "Informacion del proyecto") {
-      // Extract projectId from parameters.fields
+      // Extraer ID del proyecto de parametros
       const fields = response.queryResult.parameters?.fields;
       const projectIdParam =
         fields?.projectId?.stringValue || fields?.projectId?.string_value;
@@ -63,7 +62,7 @@ export const handleWebhook = async (req, res) => {
           );
           fulfillmentText = `Información del proyecto "${projectIdParam}":\n${project.descripcion}\n\n`;
         } catch (err) {
-          fulfillmentText = `No se encontró información para el proyecto "${projectIdParam}". Checa el nombre otra vez o pregúntame nuevamente :).`;
+          fulfillmentText = `No se encontró información para el proyecto "${projectIdParam}". Checa el nombre otra vez o pregúntame nuevamente.`;
         }
       } else {
         fulfillmentText =

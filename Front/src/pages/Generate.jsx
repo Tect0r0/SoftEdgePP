@@ -45,7 +45,6 @@ function Generate() {
 
   useEffect(() => {
     const fetchHistory = async () => {
-      console.log("Llamando historial con id de usuario:", userId);
       if (!userId) return;
   
       try {
@@ -55,7 +54,6 @@ function Generate() {
         }
   
         const prompts = await response.json();
-        console.log("Historial de prompts obtenido:", prompts);
         setHistory(prompts.map((item) => item.prompt)); // Solo guarda los textos de los prompts
       } catch (error) {
         console.error("Error al cargar el historial desde el backend:", error);

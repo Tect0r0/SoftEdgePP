@@ -72,7 +72,6 @@ const SprintDetails = ({
 
         await refreshSprintsData(); // Refrescar los datos del sprint
 
-        console.log("Tarea actualizada correctamente en el frontend");
       } catch (error) {
         console.error("Error al conectar con Firestore:", error);
       }
