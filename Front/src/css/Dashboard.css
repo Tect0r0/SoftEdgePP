@@ -137,15 +137,16 @@ body {
 .team-member-card {
   background: #f8f9fa;
   border-radius: 8px;
-  padding: 1rem;
-  margin-bottom: 1rem;
+  padding: 0.5rem 1rem;
+  margin-bottom: 0.75rem;
   transition: all 0.3s ease;
   display: flex;
   align-items: center;
   gap: 1rem;
   width: 100%;
   box-sizing: border-box;
-  font-size: 16px;
+  font-size: 15px;
+  min-height: 48px;
 }
 
 .team-member-card:hover {
@@ -154,52 +155,51 @@ body {
 }
 
 .member-profile {
-  width: 40px;
-  height: 40px;
+  width: 36px;
+  height: 36px;
+  font-size: 1rem;
   border-radius: 50%;
-  background-color: #e1d3e8;
+  background-color: #7a5a96;
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #5d3a7f;
   font-weight: 600;
-  font-size: 1.1rem;
   flex-shrink: 0;
 }
 
 .member-info {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: flex-start;
   flex: 1;
   min-width: 0;
   overflow: hidden;
 }
 
-.member-name,
-.member-role,
-.member-email {
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  width: 100%;
-  font-size: 16px;
-}
-
 .member-name {
   color: #333;
   font-weight: 600;
-  margin-bottom: 0.25rem;
-}
-
-.member-role {
-  color: #666;
-  font-size: 0.9rem;
-  font-size: 16px;
+  font-size: 1rem;
+  margin-bottom: 0;
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .member-email {
   color: #9e72be;
-  font-size: 0.85rem;
-  margin-top: 0.25rem;
-  font-size: 16px;
+  font-size: 0.95rem;
+  margin-top: 0.1rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.member-role {
+  display: none; /* Oculta el rol si no es necesario */
 }
 
 .dashboard-loading {
@@ -621,9 +621,10 @@ td {
 }
 
 .back-button {
-  position: absolute;
-  top: 20px;
-  left: 20px;
+  position: static !important;
+  margin-left: -0.5rem;
+  margin-top: 0;
+  margin-bottom: 0;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -1774,4 +1775,14 @@ td {
   .sprint-duration-select {
     width: 100%;
   }
+}
+
+/* Fila para la flecha de regreso arriba de los tabs */
+.dashboard-header-row {
+  width: 100%;
+  display: flex;
+  align-items: flex-start;
+  margin-bottom: 2rem;
+  min-height: 0;
+  padding-top: 0;
 }

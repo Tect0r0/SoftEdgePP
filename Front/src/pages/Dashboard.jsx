@@ -1850,9 +1850,9 @@ const Dashboard = () => {
       </div>
       <div className="dashboard-content">
         <div className="main-dashboard-content">
-          <button className="back-button" onClick={() => navigate("/home")}>
-            ←
-          </button>
+          <div className="dashboard-header-row">
+            <button className="back-button" onClick={() => navigate("/home")}>←</button>
+          </div>
           <div className="dashboard-tabs">
             {(role == "admin" || role == "editor") && (
               <>
