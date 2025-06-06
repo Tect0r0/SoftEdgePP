@@ -1796,14 +1796,13 @@ const Dashboard = () => {
             {(role === "admin" || role === "editor") && (
               <div className="button-container">
                 <button
-                  className="popup-button delete"
+                  className="popup-button delete equal-width-btn"
                   onClick={() => handleDeleteProject(projectId)}
                 >
                   Eliminar Proyecto
                 </button>
-
                 <button
-                  className="popup-button primary"
+                  className="popup-button primary small-add-element equal-width-btn"
                   onClick={() => setIsEditing(true)}
                 >
                   Editar Proyecto
