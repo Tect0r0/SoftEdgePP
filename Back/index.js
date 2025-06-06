@@ -14,10 +14,10 @@ const app = express();
 const allowedOrigins = [
   `http://localhost:5173`,
   `http://localhost:5001`,
-  "https://soft-edge-two.vercel.app",
+  "https://soft-edge-pp.vercel.app",
   "https://dialogflow.cloud.google.com",
   "https://extensions.aitopia.ai",
-  "https://soft-edge-back.vercel.app",
+  "https://soft-edge-pp-back.vercel.app",
   "https://api.prod.whoop.com/oauth/oauth2/auth",
   "https://api.prod.whoop.com/oauth/oauth2/token"
 ];
