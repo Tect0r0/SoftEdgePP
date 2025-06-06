@@ -1,0 +1,118 @@
+.popup-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background: rgba(60, 60, 60, 0.35);
+  z-index: 1000;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.popup-content {
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 32px rgba(60, 60, 60, 0.18);
+  padding: 32px 28px 24px 28px;
+  min-width: 350px;
+  max-width: 95vw;
+  position: relative;
+  animation: popup-fade-in 0.2s;
+}
+
+@keyframes popup-fade-in {
+  from { opacity: 0; transform: scale(0.98);}
+  to { opacity: 1; transform: scale(1);}
+}
+
+.popup-close {
+  position: absolute;
+  top: 14px;
+  right: 18px;
+  background: none;
+  border: none;
+  font-size: 1.7rem;
+  color: #9e72be;
+  cursor: pointer;
+  transition: color 0.2s;
+}
+
+.popup-close:hover {
+  color: #7a5a96;
+}
+
+.insert-element-form label {
+  display: block;
+  margin-bottom: 14px;
+  font-weight: 500;
+  color: #5a4a6d;
+}
+
+.insert-element-form input[type="text"],
+.insert-element-form select,
+.insert-element-form textarea {
+  width: 100%;
+  padding: 8px 10px;
+  margin-top: 4px;
+  border: 1px solid #e0e0e0;
+  border-radius: 6px;
+  font-size: 15px;
+  font-family: inherit;
+  background: #f8f9fa;
+  transition: border-color 0.2s;
+  box-sizing: border-box;
+}
+
+.insert-element-form input[readonly],
+.insert-element-form .readonly-input {
+  background: #f3f3f3;
+  color: #888;
+  cursor: not-allowed;
+}
+
+.insert-element-form textarea {
+  min-height: 70px;
+  resize: vertical;
+}
+
+.insert-element-form button[type="submit"],
+.popup-button.primary {
+  width: 100%;
+  padding: 10px 0;
+  background: linear-gradient(90deg, #9e72be 0%, #7a5a96 100%);
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  font-weight: 600;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background 0.2s;
+}
+
+.insert-element-form button[type="submit"]:hover,
+.popup-button.primary:hover {
+  background: linear-gradient(90deg, #7a5a96 0%, #9e72be 100%);
+}
+
+.small-add-element {
+  font-size: 0.92rem;
+  padding: 7px 10px;
+  min-width: 150px;
+  height: 38px;
+  border-radius: 4px;
+  line-height: 1.2;
+  margin-right: 0;
+  box-sizing: border-box;
+  max-width: 180px;
+  width: auto;
+}
+
+@media (max-width: 600px) {
+  .popup-content {
+    min-width: 90vw;
+    padding: 18px 8px 14px 8px;
+  }
+}
