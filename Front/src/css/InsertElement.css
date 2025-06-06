@@ -110,6 +110,34 @@
   width: auto;
 }
 
+.button-container {
+  display: flex;
+  gap: 10px;
+  align-items: flex-end;
+  justify-content: flex-start;
+}
+
+.equal-width-btn {
+  min-width: 150px;
+  max-width: 180px;
+  width: 160px;
+  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  height: 38px;
+  padding: 7px 10px !important;
+  font-size: 0.92rem;
+  border-radius: 4px;
+  line-height: 1.2;
+  vertical-align: middle;
+}
+
+.button-container .equal-width-btn:last-child {
+  margin-right: 0;
+}
+
 @media (max-width: 600px) {
   .popup-content {
     min-width: 90vw;
