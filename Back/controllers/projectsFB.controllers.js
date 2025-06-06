@@ -828,3 +828,77 @@ export const updateSprintNumber = async (req, res) => {
       .json({ message: "Error al actualizar el número de sprint" });
   }
 };
+
+export const addElementToProject = async (req, res) => {
+  const { id } = req.params; // Project ID
+  const { type, title, description } = req.body; // Element details
+
+  try {
+    // Validate the type field
+    const validTypes = ["EP", "RF", "RNF", "HU"];
+    if (!validTypes.includes(type)) {
+      return res.status(400).json({ message: "Tipo de elemento inválido." });
+    }
+
+    // Fetch the project from Firestore
+    const projectRef = db.collection("proyectos").doc(id);
+    const projectDoc = await projectRef.get();
+
+    if (!projectDoc.exists) {
+      return res.status(404).json({ message: "Proyecto no encontrado." });
+    }
+
+    const projectData = projectDoc.data();
+
+    // Generate a unique ID for the new element (e.g., HU01, HU02, ...)
+    const elementCount = (projectData[type]?.length || 0) + 1;
+    const elementId = `${type}${elementCount.toString().padStart(2, "0")}`;
+
+    // Create the new element
+    const newElement = {
+      id: elementId,
+      titulo: title,
+      data: description,
+    };
+
+    // Add the element to the corresponding list
+    const updatedSection = [...(projectData[type] || []), newElement];
+
+    // Update the project in Firestore
+    await projectRef.update({ [type]: updatedSection });
+
+    res.status(200).json({ message: "Elemento añadido exitosamente.", element: newElement });
+  } catch (error) {
+    console.error("Error adding element to project:", error);
+    res.status(500).json({ message: "Error al añadir el elemento al proyecto." });
+  }
+};
+
+export const generateElementId = async (req, res) => {
+  const { id } = req.params;
+  const { type } = req.body;
+
+  try {
+    // Validate the type field
+    if (!["EP", "RF", "RNF", "HU"].includes(type)) {
+      return res.status(400).json({ message: "Tipo de elemento inválido." });
+    }
+
+    // Fetch the project from the database
+    const projectRef = db.collection("proyectos").doc(id);
+    const projectDoc = await projectRef.get();
+
+    if (!projectDoc.exists) {
+      return res.status(404).json({ message: "Proyecto no encontrado." });
+    }
+
+    const projectData = projectDoc.data();
+    const elementCount = (projectData[type]?.length || 0) + 1;
+    const generatedId = `${type}${elementCount.toString().padStart(2, "0")}`;
+
+    res.status(200).json({ id: generatedId });
+  } catch (error) {
+    console.error("Error generating element ID:", error);
+    res.status(500).json({ message: "Error al generar el ID del elemento." });
+  }
+};

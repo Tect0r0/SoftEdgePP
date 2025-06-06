@@ -10,6 +10,7 @@ import TeamEditPopup from "../components/TeamEditPopup";
 import ModificationHistory from "../components/ModificationHistory";
 import SprintDetails from "../components/SprintDetails";
 import TaskReassignmentPopup from "../components/TaskReassignmentPopup";
+import InsertElement from "../components/InsertElement";
 import "../css/Dashboard.css";
 import ProjectMetrics from "../components/ProjectMetrics";
 import "../css/Spinner.css";
@@ -41,6 +42,7 @@ const Dashboard = () => {
 
   const [sprintDuration, setSprintDuration] = useState(2);
   const [deletingSprint, setDeletingSprint] = useState(false);
+  const [showInsertElementPopup, setShowInsertElementPopup] = useState(false);
 
   // Función para generar sprints dinámicamente
   const generateSprints = (
@@ -348,6 +350,42 @@ const Dashboard = () => {
 
   const handleSprintClick = (sprint) => {
     setSelectedSprint(sprint);
+  };
+
+  const handleInsertElement = async (payload) => {
+    try {
+      const token = localStorage.getItem("token");
+      if (!token) {
+        setError("No se encontró token de autenticación");
+        return;
+      }
+
+      const response = await fetch(
+        `${BACKEND_URL}/projectsFB/${projectId}/add-element`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify(payload),
+        }
+      );
+
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.message || "Error al agregar el elemento");
+      }
+
+      setSuccessMessage("Elemento agregado exitosamente");
+      setShowInsertElementPopup(false);
+      await fetchProject();
+    } catch (error) {
+      console.error("Error adding element:", error);
+      setError(
+        error.message || "Error al agregar el elemento. Por favor, inténtalo de nuevo."
+      );
+    }
   };
 
   const handleCloseSprintDetails = () => {
@@ -1143,45 +1181,55 @@ const Dashboard = () => {
   );
 
   const renderRequirementsTab = () => (
-    <RenderRequirementsTab
-      project={project}
-      activeRequirement={activeRequirement}
-      setActiveRequirement={setActiveRequirement}
-      handleItemClick={handleItemClick}
-      showPopup={showPopup}
-      selectedItem={selectedItem}
-      handleClosePopup={handleClosePopup}
-      tasks={tasks}
-      setTasks={setTasks}
-      teamMembers={teamMembers}
-      setTaskToDelete={setTaskToDelete}
-      deleteMode={deleteMode}
-      setDeleteMode={setDeleteMode}
-      handleDragStart={handleDragStart}
-      handleDragOver={handleDragOver}
-      handleDragEnter={handleDragEnter}
-      handleDragLeave={handleDragLeave}
-      handleDrop={handleDrop}
-      handleDragEnd={handleDragEnd}
-      showTaskForm={showTaskForm}
-      setShowTaskForm={setShowTaskForm}
-      taskFormData={taskFormData}
-      setTaskFormData={setTaskFormData}
-      setSuccessMessage={setSuccessMessage}
-      setShowDeleteConfirmation={setShowDeleteConfirmation}
-      role={role}
-      editing={editing}
-      setEditing={setEditing}
-      saveStatus={saveStatus}
-      setSaveStatus={setSaveStatus}
-      requirementEditData={requirementEditData}
-      setRequirementEditData={setRequirementEditData}
-      handleSaveEdit={handleSaveEdit}
-      handleInputChange={handleInputChange}
-      nextTaskNumber={nextTaskNumber}
-      setNextTaskNumber={setNextTaskNumber}
-      fetchAllTasks={fetchAllTasks}
-    />
+    <div>
+      <div style={{ display: "flex", justifyContent: "flex-end", marginBottom: 16 }}>
+        <button
+          className="popup-button primary small-add-element"
+          onClick={() => setShowInsertElementPopup(true)}
+        >
+          Agregar Elemento
+        </button>
+      </div>
+      <RenderRequirementsTab
+        project={project}
+        activeRequirement={activeRequirement}
+        setActiveRequirement={setActiveRequirement}
+        handleItemClick={handleItemClick}
+        showPopup={showPopup}
+        selectedItem={selectedItem}
+        handleClosePopup={handleClosePopup}
+        tasks={tasks}
+        setTasks={setTasks}
+        teamMembers={teamMembers}
+        setTaskToDelete={setTaskToDelete}
+        deleteMode={deleteMode}
+        setDeleteMode={setDeleteMode}
+        handleDragStart={handleDragStart}
+        handleDragOver={handleDragOver}
+        handleDragEnter={handleDragEnter}
+        handleDragLeave={handleDragLeave}
+        handleDrop={handleDrop}
+        handleDragEnd={handleDragEnd}
+        showTaskForm={showTaskForm}
+        setShowTaskForm={setShowTaskForm}
+        taskFormData={taskFormData}
+        setTaskFormData={setTaskFormData}
+        setSuccessMessage={setSuccessMessage}
+        setShowDeleteConfirmation={setShowDeleteConfirmation}
+        role={role}
+        editing={editing}
+        setEditing={setEditing}
+        saveStatus={saveStatus}
+        setSaveStatus={setSaveStatus}
+        requirementEditData={requirementEditData}
+        setRequirementEditData={setRequirementEditData}
+        handleSaveEdit={handleSaveEdit}
+        handleInputChange={handleInputChange}
+        nextTaskNumber={nextTaskNumber}
+        setNextTaskNumber={setNextTaskNumber}
+        fetchAllTasks={fetchAllTasks}
+      />
+    </div>
   );
 
   const renderMetricsTab = () => (
@@ -1984,6 +2032,17 @@ const Dashboard = () => {
       )}
 
       {selectedSprint && renderSprintDetails(selectedSprint)}
+
+      {showInsertElementPopup && (
+        <InsertElement
+          onClose={() => setShowInsertElementPopup(false)}
+          projectId={projectId}
+          setSuccessMessage={setSuccessMessage}
+          setError={setError}
+          onInsert={handleInsertElement}
+          activeRequirement={activeRequirement}
+        />
+      )}
 
       <ErrorPopup message={error} onClose={closeErrorPopup} />
       <SuccessPopup message={successMessage} onClose={closeSuccessPopup} />
